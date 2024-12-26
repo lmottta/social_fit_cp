@@ -1,7 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import CartaoTreino from '../components/CartaoTreino';
 import CartaoRanking from '../components/CartaoRanking';
+import CriarPost from '../components/CriarPost';
+import Post from '../components/Post';
 import { Activity, Flame, Users } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 const treinosExemplo = [
   {
@@ -40,6 +43,42 @@ const treinosExemplo = [
   }
 ];
 
+const postsExemplo = [
+  {
+    id: '1',
+    autorId: '1',
+    autorNome: 'João Silva',
+    autorAvatar: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100&h=100&fit=crop',
+    texto: 'Começando mais uma semana de treinos! 💪\nFoco total nos objetivos!',
+    imagens: [],
+    isPrivado: false,
+    criadoEm: new Date(),
+    curtidas: 15,
+    comentarios: []
+  },
+  {
+    id: '2',
+    autorId: '2',
+    autorNome: 'Maria Santos',
+    autorAvatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop',
+    texto: 'Qual é o melhor horário para treinar?',
+    imagens: [],
+    isPrivado: false,
+    enquete: {
+      opcoes: [
+        { texto: 'Manhã cedo', votos: 45 },
+        { texto: 'Horário do almoço', votos: 12 },
+        { texto: 'Fim da tarde', votos: 38 },
+        { texto: 'Noite', votos: 25 }
+      ],
+      totalVotos: 120
+    },
+    criadoEm: new Date(),
+    curtidas: 32,
+    comentarios: []
+  }
+];
+
 function CartaoEstatistica({ icone, rotulo, valor }: { icone: React.ReactNode; rotulo: string; valor: string }) {
   return (
     <div className="bg-white p-4 rounded-xl shadow-sm">
@@ -53,6 +92,19 @@ function CartaoEstatistica({ icone, rotulo, valor }: { icone: React.ReactNode; r
 }
 
 export default function Inicio() {
+  const { usuario } = useAuth();
+  const [posts, setPosts] = useState(postsExemplo);
+
+  const handleNovoPost = (post: any) => {
+    setPosts(prev => [{
+      id: String(prev.length + 1),
+      autorId: usuario?.id || '',
+      autorNome: usuario?.nome || '',
+      autorAvatar: usuario?.perfil?.avatar,
+      ...post
+    }, ...prev]);
+  };
+
   return (
     <>
       {/* Visão geral das estatísticas */}
@@ -78,9 +130,24 @@ export default function Inicio() {
         {/* Feed */}
         <div className="md:col-span-2">
           <h2 className="text-2xl font-bold mb-4">Feed de Atividades</h2>
-          {treinosExemplo.map(treino => (
-            <CartaoTreino key={treino.id} treino={treino} />
-          ))}
+          
+          {/* Criar post */}
+          <div className="mb-8">
+            <CriarPost onSubmit={handleNovoPost} />
+          </div>
+
+          {/* Lista de posts e treinos */}
+          <div className="space-y-8">
+            {[...posts, ...treinosExemplo].sort((a, b) => 
+              new Date(b.criadoEm).getTime() - new Date(a.criadoEm).getTime()
+            ).map(item => (
+              'tipo' in item ? (
+                <CartaoTreino key={item.id} treino={item} />
+              ) : (
+                <Post key={item.id} {...item} />
+              )
+            ))}
+          </div>
         </div>
 
         {/* Ranking */}

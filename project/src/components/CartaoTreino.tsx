@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Heart, MessageCircle, Share2 } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Clock, Activity, Dumbbell, Repeat, Weight } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { Link } from 'react-router-dom';
 import { alternarCurtida, verificarCurtida, obterTotalCurtidas, obterComentarios } from '../services/interacoes';
 import SecaoComentarios from './SecaoComentarios';
 import BotaoSeguir from './BotaoSeguir';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 interface Exercicio {
   nome: string;
@@ -119,31 +121,37 @@ export default function CartaoTreino({ treino }: CartaoTreinoProps) {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-emerald-100 overflow-hidden">
+    <div className="bg-white rounded-xl shadow-sm border border-emerald-100 overflow-hidden hover:shadow-md transition-shadow">
       {/* Cabeçalho do treino com informações do autor */}
       <div className="px-6 py-4">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-6">
           <Link 
             to={`/perfil/${treino.usuarioId}`} 
-            className="flex items-center gap-3 hover:bg-gray-50 p-2 rounded-lg transition-colors"
+            className="flex items-center gap-3 hover:bg-gray-50 p-2 -ml-2 rounded-lg transition-colors group"
           >
             <img
               src={treino.avatarUsuario || `https://ui-avatars.com/api/?name=${encodeURIComponent(treino.nomeUsuario)}&background=random`}
               alt={treino.nomeUsuario}
-              className="w-10 h-10 rounded-full border border-emerald-100"
+              className="w-12 h-12 rounded-full border-2 border-emerald-100 group-hover:border-emerald-200 transition-colors"
             />
             <div>
-              <h3 className="font-medium text-gray-900 hover:text-emerald-600">{treino.nomeUsuario}</h3>
+              <h3 className="font-semibold text-gray-900 group-hover:text-emerald-600 transition-colors">{treino.nomeUsuario}</h3>
               <div className="text-sm text-gray-500 space-x-2">
-                <span>{treino.duracao} minutos</span>
+                <span className="inline-flex items-center gap-1">
+                  <Clock className="w-4 h-4" />
+                  {treino.duracao} min
+                </span>
                 <span>•</span>
-                <span className="capitalize">{treino.intensidade}</span>
+                <span className="inline-flex items-center gap-1">
+                  <Activity className="w-4 h-4" />
+                  <span className="capitalize">{treino.intensidade}</span>
+                </span>
               </div>
             </div>
           </Link>
           <div className="flex items-center gap-3">
             <span className="text-sm text-gray-500">
-              {new Date(treino.criadoEm).toLocaleDateString('pt-BR')}
+              {format(new Date(treino.criadoEm), "d 'de' MMM", { locale: ptBR })}
             </span>
             <BotaoSeguir
               usuarioId={treino.usuarioId}
@@ -153,49 +161,74 @@ export default function CartaoTreino({ treino }: CartaoTreinoProps) {
           </div>
         </div>
 
-        {/* Tipo do treino */}
-        <div className="flex items-center gap-2 mb-4 px-2">
+        {/* Tag do tipo de treino */}
+        <div className="mb-4">
           <span className={`
-            px-3 py-1 rounded-full text-sm font-medium
+            px-3 py-1 rounded-full text-sm font-medium inline-flex items-center gap-2
             ${treino.tipo === 'força' 
-              ? 'bg-orange-100 text-orange-700' 
+              ? 'bg-purple-100 text-purple-600' 
               : treino.tipo === 'cardio'
-              ? 'bg-emerald-100 text-emerald-700'
-              : 'bg-blue-100 text-blue-700'
-            } capitalize
+              ? 'bg-orange-100 text-orange-600'
+              : 'bg-blue-100 text-blue-600'
+            }
           `}>
+            <Dumbbell className="w-4 h-4" />
             {treino.tipo}
           </span>
         </div>
 
         {/* Lista de exercícios */}
-        <div className="space-y-2 bg-gray-50 rounded-lg p-4 mb-4 mx-2">
-          {treino.exercicios.map((exercicio, index) => (
-            <div key={index} className="flex items-center justify-between text-sm">
-              <div className="flex items-center gap-2">
-                <span className="w-6 h-6 rounded-full bg-white border border-emerald-200 flex items-center justify-center text-xs text-emerald-600 font-medium">
-                  {index + 1}
-                </span>
-                <span className="font-medium text-gray-900">{exercicio.nome}</span>
+        <div className="space-y-4">
+          <h4 className="font-medium text-gray-900 flex items-center gap-2">
+            <Dumbbell className="w-5 h-5 text-emerald-600" />
+            Exercícios
+          </h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {treino.exercicios.map((exercicio, index) => (
+              <div 
+                key={index}
+                className="bg-gray-50 rounded-lg p-3 border border-emerald-100"
+              >
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h5 className="font-medium text-gray-900">{exercicio.nome}</h5>
+                    <div className="mt-1 space-y-1">
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <Repeat className="w-4 h-4 text-emerald-600" />
+                        {exercicio.series} séries x {exercicio.repeticoes} reps
+                      </div>
+                      {exercicio.peso > 0 && (
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <Weight className="w-4 h-4 text-emerald-600" />
+                          {exercicio.peso}kg
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600 font-medium">
+                    {index + 1}
+                  </div>
+                </div>
               </div>
-              <span className="text-gray-600">
-                {exercicio.series}x{exercicio.repeticoes} • {exercicio.peso}kg
-              </span>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
 
         {/* Barra de interações */}
-        <div className="flex items-center justify-between pt-4 border-t border-gray-100 px-2">
+        <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-100">
           <div className="flex items-center gap-6">
             {/* Botão de curtir */}
             <button
               onClick={handleCurtir}
               disabled={carregandoCurtida || !usuario}
-              className="flex items-center gap-2 text-gray-500 hover:text-emerald-600 transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 text-gray-500 hover:text-emerald-600 transition-colors disabled:opacity-50 group"
             >
               <Heart
-                className={`w-5 h-5 ${curtido ? 'fill-emerald-600 text-emerald-600' : ''}`}
+                className={`w-5 h-5 transition-all ${
+                  curtido 
+                    ? 'fill-emerald-600 text-emerald-600 scale-110' 
+                    : 'group-hover:scale-110'
+                }`}
               />
               <span className="text-sm font-medium">{totalCurtidas}</span>
             </button>
@@ -209,20 +242,22 @@ export default function CartaoTreino({ treino }: CartaoTreinoProps) {
             {/* Botão de compartilhar */}
             <button
               onClick={handleCompartilhar}
-              className="flex items-center gap-2 text-gray-500 hover:text-emerald-600 transition-colors"
+              className="flex items-center gap-2 text-gray-500 hover:text-emerald-600 transition-colors group"
             >
-              <Share2 className="w-5 h-5" />
+              <Share2 className="w-5 h-5 group-hover:scale-110 transition-transform" />
             </button>
           </div>
         </div>
       </div>
 
-      {/* Seção de comentários - sempre visível */}
-      <div className="bg-gray-50 border-t border-emerald-100 px-6 py-4">
-        <SecaoComentarios
-          atividadeId={treino.id}
-          onAtualizarTotal={setTotalComentarios}
-        />
+      {/* Seção de comentários */}
+      <div className="bg-gray-50 border-t border-emerald-100">
+        <div className="px-10 py-4">
+          <SecaoComentarios
+            atividadeId={treino.id}
+            onAtualizarTotal={setTotalComentarios}
+          />
+        </div>
       </div>
     </div>
   );
