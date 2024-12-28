@@ -17,8 +17,8 @@ export default function Login() {
     setCarregando(true);
 
     try {
-      const resposta = await loginService(email, senha);
-      login(resposta.token, resposta.usuario);
+      const resposta = await loginService({ email, senha });
+      login(resposta.token, resposta.user);
     } catch (error) {
       if (error instanceof Error) {
         setErro(error.message);
@@ -31,14 +31,14 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-sm">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-500 to-purple-600 px-4">
+      <div className="max-w-md w-full space-y-8 bg-white bg-opacity-90 p-8 rounded-xl shadow-2xl">
         <div className="text-center">
-          <div className="flex justify-center">
-            <LogIn className="w-12 h-12 text-blue-600" />
+          <div className="flex justify-center mb-4">
+            <img src="/images/logo.png" alt="Logo" className="w-32 h-32" />
           </div>
-          <h2 className="mt-4 text-3xl font-bold text-gray-900">Bem-vindo ao FitTracker</h2>
-          <p className="mt-2 text-gray-600">Entre na sua conta para continuar</p>
+          <h2 className="mt-4 text-4xl font-extrabold text-gray-900">Bem-vindo à SocialFit</h2>
+          <p className="mt-2 text-gray-700">Entre na sua conta para continuar</p>
         </div>
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
