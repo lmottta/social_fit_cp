@@ -13,5 +13,28 @@ export default defineConfig({
   server: {
     port: 5173,
     host: true,
+    watch: {
+      usePolling: true,
+    },
+    hmr: {
+      overlay: true
+    }
   },
-}) 
+  optimizeDeps: {
+    exclude: ['sequelize', 'pg-hstore'],
+    esbuildOptions: {
+      define: {
+        global: 'globalThis'
+      }
+    }
+  },
+  build: {
+    rollupOptions: {
+      external: ['sequelize', 'pg-hstore']
+    }
+  },
+  define: {
+    'process.env': process.env,
+    global: 'globalThis'
+  }
+})

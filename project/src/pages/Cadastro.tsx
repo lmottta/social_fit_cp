@@ -32,10 +32,8 @@ export default function Cadastro() {
 
     if (!senha) {
       novosErros.senha = 'Senha é obrigatória';
-    } else if (senha.length < 8) {
-      novosErros.senha = 'Senha deve ter pelo menos 8 caracteres';
-    } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])/.test(senha)) {
-      novosErros.senha = 'Senha deve conter letras maiúsculas, minúsculas e números';
+    } else if (senha.length < 6) {
+      novosErros.senha = 'Senha deve ter pelo menos 6 caracteres';
     }
 
     if (senha !== confirmarSenha) {
@@ -57,15 +55,20 @@ export default function Cadastro() {
     setCarregando(true);
 
     try {
-      const resposta = await cadastrar(nome, email, senha, tipoUsuario);
+      const resposta = await cadastrar({
+        nome,
+        email,
+        senha,
+        tipoUsuario
+      });
       
       // Verifica se a resposta é válida
-      if (!resposta?.token || !resposta?.usuario) {
+      if (!resposta?.token || !resposta?.user) {
         throw new Error('Resposta inválida do servidor');
       }
 
       // Salva os dados do usuário e token
-      login(resposta.token, resposta.usuario);
+      login(resposta.token, resposta.user);
       
       // Redireciona com base no tipo de usuário
       if (tipoUsuario === 'aluno') {
@@ -76,12 +79,7 @@ export default function Cadastro() {
     } catch (error) {
       console.error('Erro ao criar conta:', error);
       if (error instanceof Error) {
-        // Verifica se é um erro específico de validação
-        if (error.message.includes('Nome') || error.message.includes('Email') || error.message.includes('Senha')) {
-          setErro({ geral: error.message });
-        } else {
-          setErro({ geral: 'Ocorreu um erro ao criar sua conta. Tente novamente.' });
-        }
+        setErro({ geral: error.message });
       } else {
         setErro({ geral: 'Ocorreu um erro ao criar sua conta. Tente novamente.' });
       }
